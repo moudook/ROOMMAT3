@@ -32,7 +32,10 @@ html, body {
   z-index: 2;
 }
 
-.page-0 { background-color: #000; }
+.page-0 { 
+  background-color: #000; 
+  z-index: 1000 !important;
+}
 .page-1 { background-color: #000; }
 .page-2 { background-color: #000; }
 .page-3 { background-color: #000; }

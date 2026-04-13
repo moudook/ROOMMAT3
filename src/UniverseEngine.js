@@ -36,7 +36,7 @@ const UniverseEngine = ({
     // Handle seamless page transitions
     if (isTransitioning) {
       if (shape === 'Black Hole') {
-        if (materialRef.current) {
+        if (materialRef.current && materialRef.current.uniforms && materialRef.current.uniforms.uChaos) {
           materialRef.current.uniforms.uChaos.value = transitionDirection === 'out' ? transitionProgress : 1 - transitionProgress;
         }
         if (transitionDirection === 'out' && containerRef.current) {
@@ -45,15 +45,15 @@ const UniverseEngine = ({
           containerRef.current.classList.add('cinema');
         }
       } else if (shape === 'Quantum Knot') {
-        if (materialRef.current) {
+        if (materialRef.current && materialRef.current.uniforms && materialRef.current.uniforms.uWarp) {
           materialRef.current.uniforms.uWarp.value = transitionDirection === 'in' ? 2.0 * (1 - transitionProgress) : 2.0 * transitionProgress;
         }
       }
     } else {
       // Reset to normal state
-      if (materialRef.current) {
-        materialRef.current.uniforms.uChaos.value = 0.0;
-        materialRef.current.uniforms.uWarp.value = 0.0;
+      if (materialRef.current && materialRef.current.uniforms) {
+        if (materialRef.current.uniforms.uChaos) materialRef.current.uniforms.uChaos.value = 0.0;
+        if (materialRef.current.uniforms.uWarp) materialRef.current.uniforms.uWarp.value = 0.0;
       }
     }
 
@@ -713,14 +713,8 @@ const UniverseEngine = ({
       controls.autoRotate = v;
     });
     
-    // Update camera controls from actual camera values in tick loop
-    const updateCameraControls = () => {
-      cameraControls.posX = camera.position.x;
-      cameraControls.posY = camera.position.y;
-      cameraControls.posZ = camera.position.z;
-      cameraControls.zoom = camera.zoom;
-      cameraControllers.forEach(controller => controller.updateDisplay());
-    };
+    // Store controller references to update them
+    const cameraControllers = [];
     
     // Default camera position controls (separate folder)
     const f3 = gui.addFolder('>> DEFAULT_CAM');
@@ -729,8 +723,7 @@ const UniverseEngine = ({
     f3.add(CONFIG, 'defaultCamZ', 1, 100).name('DEF_Z');
     f3.add(CONFIG, 'defaultZoom', 0.1, 5).name('DEF_ZOOM');
     
-    const cameraControllers = [];
-    // Store controller references to update them - safety check first
+    // Now collect controllers AFTER they've been created
     if (gui.controllers && Array.isArray(gui.controllers)) {
       gui.controllers.forEach(c => {
         if (c._name === 'CAM_X' || c._name === 'CAM_Y' || c._name === 'CAM_Z' || c._name === 'ZOOM') {
@@ -738,6 +731,23 @@ const UniverseEngine = ({
         }
       });
     }
+    
+    // Update camera controls from actual camera values in tick loop
+    const updateCameraControls = () => {
+      cameraControls.posX = camera.position.x;
+      cameraControls.posY = camera.position.y;
+      cameraControls.posZ = camera.position.z;
+      cameraControls.zoom = camera.zoom;
+      
+      // Safety check before iterating
+      if (cameraControllers && cameraControllers.length > 0) {
+        cameraControllers.forEach(controller => {
+          if (controller && controller.updateDisplay) {
+            controller.updateDisplay();
+          }
+        });
+      }
+    };
     
     // Reset camera function
     const resetCamera = () => {
@@ -844,18 +854,24 @@ const UniverseEngine = ({
       // Update camera control sliders to reflect actual camera position
       updateCameraControls();
       
-      composer.render();
+      // Safety check before rendering
+      if (composer && renderer && scene && camera) {
+        composer.render();
+      }
       
       // Only continue if not paused
       if (!isPausedRef.current) {
         // Throttle to 30fps on mobile
         const now = performance.now();
-        const targetFPS = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 33.33 : 16.67;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const targetFPS = isMobile ? 33.33 : 16.67;
         const delay = Math.max(0, targetFPS - (now - lastTimeRef.current));
         
         lastTimeRef.current = now;
         animationRef.current = setTimeout(() => {
-          animationRef.current = requestAnimationFrame(tick);
+          if (!isPausedRef.current) {
+            animationRef.current = requestAnimationFrame(tick);
+          }
         }, delay);
       } else {
         animationRef.current = null;

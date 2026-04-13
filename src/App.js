@@ -105,6 +105,9 @@ function App() {
   }, [activePage, targetPage, isTransitioning]);
 
   const getOpacity = (pageNum) => {
+    // Force visibility for page 0 on initial load
+    if (pageNum === 0 && activePage === 0 && targetPage === 0) return 1;
+    
     if (activePage === pageNum && targetPage === pageNum) return 1;
     if (activePage === pageNum && targetPage !== pageNum) return 1 - transitionProgress;
     if (targetPage === pageNum && activePage !== pageNum) return transitionProgress;
