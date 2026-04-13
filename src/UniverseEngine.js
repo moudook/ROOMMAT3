@@ -31,6 +31,20 @@ const UniverseEngine = ({
   const containerRef = useRef(null);
   const guiRef = useRef(null);
   const materialRef = useRef(null);
+  
+  // Refs for props used in tick function to avoid stale closures
+  const isTransitioningRef = useRef(isTransitioning);
+  const transitionProgressRef = useRef(transitionProgress);
+  const transitionDirectionRef = useRef(transitionDirection);
+  const shapeRef = useRef(shape);
+
+  // Update refs when props change
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning;
+    transitionProgressRef.current = transitionProgress;
+    transitionDirectionRef.current = transitionDirection;
+    shapeRef.current = shape;
+  }, [isTransitioning, transitionProgress, transitionDirection, shape]);
 
   useEffect(() => {
     // Handle seamless page transitions
@@ -109,13 +123,24 @@ const UniverseEngine = ({
     };
 
     const container = containerRef.current;
+    
+    if (!container) {
+      console.error('UniverseEngine: Container ref is null');
+      return;
+    }
+    
     const canvas = document.createElement('canvas');
     container.appendChild(canvas);
     if (CONFIG.cinematic) container.classList.add('cinema');
 
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: "high-performance" });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    // Ensure container has dimensions
+    const width = container.clientWidth || window.innerWidth;
+    const height = container.clientHeight || window.innerHeight;
+    
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ReinhardToneMapping;
 
     const scene = new THREE.Scene();
@@ -620,164 +645,77 @@ const UniverseEngine = ({
       if(material) material.uniforms.uMouse.value.copy(getInteractionTarget());
     });
 
-    // --- GUI ---
-    let gui;
+    // --- GUI (only when enabled) ---
+    let updateCameraControls = () => {};
+
     if (!disableGui) {
-      gui = new GUI({ title: guiTitle });
+      const gui = new GUI({ title: guiTitle, container: container });
       guiRef.current = gui;
-      
-      const guiContainer = gui.domElement.parentElement;
-      if (guiContainer) {
-          guiContainer.style.position = 'absolute';
-      }
-     } else {
-       // Mock gui so code doesn't break
-       gui = {
-          add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }),
-          addFolder: () => ({ add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }), open: () => ({}) }),
-          controllers: []
-       };
-     }
 
-    gui.add(CONFIG, 'shape', [
-      'Atom Orbitals', 'Black Hole', 'Cosmic Web', 'DNA', 'Galaxy', 
-      'Infinity Loop', 'Klein Bottle', 'Möbius', 'Nebula', 'Pulsar', 
-      'Quantum Knot', 'Quantum Lattice', 'Quasar', 'Sphere', 'Supernova', 'Tesseract', 'Wormhole' 
-    ])
-      .name('GEO_TYPE')
-      .onFinishChange(() => {
-        buildUniverse();
-      });
+      gui.add(CONFIG, 'shape', [
+        'Atom Orbitals', 'Black Hole', 'Cosmic Web', 'DNA', 'Galaxy', 
+        'Infinity Loop', 'Klein Bottle', 'Möbius', 'Nebula', 'Pulsar', 
+        'Quantum Knot', 'Quantum Lattice', 'Quasar', 'Sphere', 'Supernova', 'Tesseract', 'Wormhole' 
+      ]).name('GEO_TYPE').onFinishChange(buildUniverse);
 
-    const themes = {
-      Void:    () => { CONFIG.colorInner='#ffffff'; CONFIG.colorOuter='#333333'; buildUniverse(); },
-      Natural: () => { CONFIG.colorInner='#ff9933'; CONFIG.colorOuter='#1144ff'; buildUniverse(); },
-      Cyber:   () => { CONFIG.colorInner='#00ffcc'; CONFIG.colorOuter='#aa00ff'; buildUniverse(); },
-      Inferno: () => { CONFIG.colorInner='#ff0000'; CONFIG.colorOuter='#110000'; buildUniverse(); }
-    };
-    
-    gui.add(CONFIG, 'mode', ['Void', 'Natural', 'Cyber', 'Inferno']).name('VISUAL_MODE').onChange(v => themes[v]());
+      const themes = {
+        Void:    () => { CONFIG.colorInner='#ffffff'; CONFIG.colorOuter='#333333'; buildUniverse(); },
+        Natural: () => { CONFIG.colorInner='#ff9933'; CONFIG.colorOuter='#1144ff'; buildUniverse(); },
+        Cyber:   () => { CONFIG.colorInner='#00ffcc'; CONFIG.colorOuter='#aa00ff'; buildUniverse(); },
+        Inferno: () => { CONFIG.colorInner='#ff0000'; CONFIG.colorOuter='#110000'; buildUniverse(); }
+      };
+      gui.add(CONFIG, 'mode', ['Void', 'Natural', 'Cyber', 'Inferno']).name('VISUAL_MODE').onChange(v => themes[v]());
 
-    const f1 = gui.addFolder('>> PHYSICS_KERNEL');
-    f1.add(CONFIG, 'timeScale', -2, 3).name('T_DILATION');
-    f1.add(CONFIG, 'count', 10000, 200000).name('PARTICLE_CNT').onFinishChange(buildUniverse);
-    f1.add(CONFIG, 'cinematic').name('CINEMA_VIEW').onChange(v => {
-      container.classList.toggle('cinema', v);
-    });
-    
-    f1.add(CONFIG, 'chaos', 0, 1).name('CHAOS_LEVEL').onChange(v => {
-      if(material) material.uniforms.uChaos.value = v;
-    });
-    f1.add(CONFIG, 'pulseRate', 0, 5).name('PULSE_RATE').onChange(v => {
-      if(material) material.uniforms.uPulse.value = v;
-    });
-    f1.add(CONFIG, 'spinSpeed', -2, 2).name('SPIN_VELOCITY').onChange(v => {
-      controls.autoRotateSpeed = v;
-    });
-    f1.add(CONFIG, 'warp', 0, 2).name('WARP_FACTOR').onChange(v => {
-      if(material) material.uniforms.uWarp.value = v;
-    });
-    
-    f1.open();
+      const f1 = gui.addFolder('>> PHYSICS_KERNEL');
+      f1.add(CONFIG, 'timeScale', -2, 3).name('T_DILATION');
+      f1.add(CONFIG, 'count', 10000, 200000).name('PARTICLE_CNT').onFinishChange(buildUniverse);
+      f1.add(CONFIG, 'cinematic').name('CINEMA_VIEW').onChange(v => container.classList.toggle('cinema', v));
+      f1.add(CONFIG, 'chaos', 0, 1).name('CHAOS_LEVEL').onChange(v => { if(material) material.uniforms.uChaos.value = v; });
+      f1.add(CONFIG, 'pulseRate', 0, 5).name('PULSE_RATE').onChange(v => { if(material) material.uniforms.uPulse.value = v; });
+      f1.add(CONFIG, 'spinSpeed', -2, 2).name('SPIN_VELOCITY').onChange(v => controls.autoRotateSpeed = v);
+      f1.add(CONFIG, 'warp', 0, 2).name('WARP_FACTOR').onChange(v => { if(material) material.uniforms.uWarp.value = v; });
+      f1.open();
 
-    // --- CAMERA INFO & CONTROLS ---
-    const f2 = gui.addFolder('>> CAMERA_SYSTEM');
-    
-    // Real-time camera controls
-    const cameraControls = {
-      posX: camera.position.x,
-      posY: camera.position.y,
-      posZ: camera.position.z,
-      zoom: camera.zoom,
-      autoRotate: CONFIG.spinSpeed !== 0
-    };
-    
-    // Position controls that directly move camera
-    f2.add(cameraControls, 'posX', -50, 50).name('CAM_X').onChange(v => {
-      camera.position.x = v;
-    });
-    f2.add(cameraControls, 'posY', -50, 50).name('CAM_Y').onChange(v => {
-      camera.position.y = v;
-    });
-    f2.add(cameraControls, 'posZ', 1, 100).name('CAM_Z').onChange(v => {
-      camera.position.z = v;
-    });
-    
-    // Zoom control
-    f2.add(cameraControls, 'zoom', 0.1, 5).name('ZOOM').onChange(v => {
-      camera.zoom = v;
-      camera.updateProjectionMatrix();
-    });
-    
-    // Auto-rotate toggle
-    f2.add(cameraControls, 'autoRotate').name('AUTO_ROTATE').onChange(v => {
-      controls.autoRotate = v;
-    });
-    
-     // Store controller references to update them
-     const cameraControllers = [];
-     
-     // Default camera position controls (separate folder)
-     const f3 = gui.addFolder('>> DEFAULT_CAM');
-     f3.add(CONFIG, 'defaultCamX', -50, 50).name('DEF_X');
-     f3.add(CONFIG, 'defaultCamY', -50, 50).name('DEF_Y');
-     f3.add(CONFIG, 'defaultCamZ', 1, 100).name('DEF_Z');
-     f3.add(CONFIG, 'defaultZoom', 0.1, 5).name('DEF_ZOOM');
-     
-     // Now collect controllers AFTER they've been created
-     setTimeout(() => {
-       if (gui.controllers && Array.isArray(gui.controllers)) {
-         gui.controllers.forEach(c => {
-           if (c && c._name === 'CAM_X' || c._name === 'CAM_Y' || c._name === 'CAM_Z' || c._name === 'ZOOM') {
-             cameraControllers.push(c);
-           }
-         });
-       }
-     }, 0);
-    
-    // Update camera controls from actual camera values in tick loop
-    const updateCameraControls = () => {
-      cameraControls.posX = camera.position.x;
-      cameraControls.posY = camera.position.y;
-      cameraControls.posZ = camera.position.z;
-      cameraControls.zoom = camera.zoom;
-      
-      // Safety check before iterating
-      if (cameraControllers && cameraControllers.length > 0) {
-        cameraControllers.forEach(controller => {
-          if (controller && controller.updateDisplay) {
-            controller.updateDisplay();
-          }
-        });
-      }
-    };
-    
-    // Reset camera function
-    const resetCamera = () => {
-      camera.position.set(CONFIG.defaultCamX, CONFIG.defaultCamY, CONFIG.defaultCamZ);
-      camera.zoom = CONFIG.defaultZoom;
-      camera.updateProjectionMatrix();
-      cameraControls.posX = CONFIG.defaultCamX;
-      cameraControls.posY = CONFIG.defaultCamY;
-      cameraControls.posZ = CONFIG.defaultCamZ;
-      cameraControls.zoom = CONFIG.defaultZoom;
-      controls.reset();
-    };
-    
-    f3.add({ reset: resetCamera }, 'reset').name('RESET_TO_DEFAULT');
-    
-    f2.open();
-    f3.close();
+      const f2 = gui.addFolder('>> CAMERA_SYSTEM');
+      const cameraControls = { posX: camera.position.x, posY: camera.position.y, posZ: camera.position.z, zoom: camera.zoom, autoRotate: true };
+      f2.add(cameraControls, 'posX', -50, 50).name('CAM_X').onChange(v => camera.position.x = v);
+      f2.add(cameraControls, 'posY', -50, 50).name('CAM_Y').onChange(v => camera.position.y = v);
+      f2.add(cameraControls, 'posZ', 1, 100).name('CAM_Z').onChange(v => camera.position.z = v);
+      f2.add(cameraControls, 'zoom', 0.1, 5).name('ZOOM').onChange(v => { camera.zoom = v; camera.updateProjectionMatrix(); });
+      f2.add(cameraControls, 'autoRotate').name('AUTO_ROTATE').onChange(v => controls.autoRotate = v);
+      f2.open();
+
+      const f3 = gui.addFolder('>> DEFAULT_CAM');
+      f3.add(CONFIG, 'defaultCamX', -50, 50).name('DEF_X');
+      f3.add(CONFIG, 'defaultCamY', -50, 50).name('DEF_Y');
+      f3.add(CONFIG, 'defaultCamZ', 1, 100).name('DEF_Z');
+      f3.add(CONFIG, 'defaultZoom', 0.1, 5).name('DEF_ZOOM');
+      f3.add({ reset: () => {
+        camera.position.set(CONFIG.defaultCamX, CONFIG.defaultCamY, CONFIG.defaultCamZ);
+        camera.zoom = CONFIG.defaultZoom;
+        camera.updateProjectionMatrix();
+        controls.reset();
+      }}, 'reset').name('RESET_TO_DEFAULT');
+      f3.close();
+
+      updateCameraControls = () => {
+        cameraControls.posX = camera.position.x;
+        cameraControls.posY = camera.position.y;
+        cameraControls.posZ = camera.position.z;
+        cameraControls.zoom = camera.zoom;
+      };
+    }
 
     buildUniverse();
 
+    // Half-res bloom for performance
+    const bloomW = Math.floor(width / 2);
+    const bloomH = Math.floor(height / 2);
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
-    
-    const bloom = new UnrealBloomPass(new THREE.Vector2(container.clientWidth, container.clientHeight), 1.5, 0.4, 0.0);
+    const bloom = new UnrealBloomPass(new THREE.Vector2(bloomW, bloomH), 1.5, 0.4, 0.0);
     composer.addPass(bloom);
-    const output = new OutputPass();
-    composer.addPass(output);
+    composer.addPass(new OutputPass());
 
     const clock = new THREE.Clock();
     
@@ -804,11 +742,11 @@ const UniverseEngine = ({
         
          // Scale down particle size during transition to prevent intense additive bloom/flash bang when shrinking
          let sizeScale = 1.0;
-         if (isTransitioning) {
-           if (shape === 'Black Hole') {
-             sizeScale = transitionDirection === 'out' ? 1.0 - transitionProgress : transitionProgress;
-           } else if (shape === 'Quantum Knot') {
-             sizeScale = transitionDirection === 'in' ? transitionProgress : 1.0 - transitionProgress;
+         if (isTransitioningRef.current) {
+           if (shapeRef.current === 'Black Hole') {
+             sizeScale = transitionDirectionRef.current === 'out' ? 1.0 - transitionProgressRef.current : transitionProgressRef.current;
+           } else if (shapeRef.current === 'Quantum Knot') {
+             sizeScale = transitionDirectionRef.current === 'in' ? transitionProgressRef.current : 1.0 - transitionProgressRef.current;
            }
          }
          
@@ -837,17 +775,21 @@ const UniverseEngine = ({
         camera.position.x = THREE.MathUtils.lerp(cameraAnimation.startX, cameraAnimation.endX, easedProgress);
         camera.position.y = THREE.MathUtils.lerp(cameraAnimation.startY, cameraAnimation.endY, easedProgress);
         
+        // Disable OrbitControls during animation to prevent override
+        controls.enabled = false;
+        
         if (progress >= 1.0) {
           cameraAnimation.active = false;
+          controls.enabled = true;
         }
       }
 
       // Transition camera zoom - universal for ALL shapes
-      if (isTransitioning) {
-        if (transitionDirection === 'out') {
-          camera.zoom = THREE.MathUtils.lerp(CONFIG.defaultZoom, CONFIG.defaultZoom * 0.15, transitionProgress);
+      if (isTransitioningRef.current) {
+        if (transitionDirectionRef.current === 'out') {
+          camera.zoom = THREE.MathUtils.lerp(CONFIG.defaultZoom, CONFIG.defaultZoom * 0.15, transitionProgressRef.current);
         } else {
-          camera.zoom = THREE.MathUtils.lerp(CONFIG.defaultZoom * 0.15, CONFIG.defaultZoom, transitionProgress);
+          camera.zoom = THREE.MathUtils.lerp(CONFIG.defaultZoom * 0.15, CONFIG.defaultZoom, transitionProgressRef.current);
         }
         camera.updateProjectionMatrix();
       }
@@ -864,20 +806,7 @@ const UniverseEngine = ({
       
       // Only continue if not paused
       if (!isPausedRef.current) {
-         // Throttle to 30fps on mobile
-         const now = performance.now();
-         const isMobile = typeof navigator !== 'undefined' && navigator.userAgent 
-           ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-           : false;
-         const targetFPS = isMobile ? 33.33 : 16.67;
-        const delay = Math.max(0, targetFPS - (now - lastTimeRef.current));
-        
-        lastTimeRef.current = now;
-        animationRef.current = setTimeout(() => {
-          if (!isPausedRef.current) {
-            animationRef.current = requestAnimationFrame(tick);
-          }
-        }, delay);
+        animationRef.current = requestAnimationFrame(tick);
       } else {
         animationRef.current = null;
       }
@@ -928,7 +857,9 @@ const UniverseEngine = ({
   }, []);
 
   return (
-    <div ref={containerRef} className="universe-engine universe-container">
+    <div ref={containerRef} className="universe-container">
+      <div className="cinematic-bar top"></div>
+      <div className="cinematic-bar bottom"></div>
     </div>
   );
 };
