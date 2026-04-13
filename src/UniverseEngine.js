@@ -630,13 +630,14 @@ const UniverseEngine = ({
       if (guiContainer) {
           guiContainer.style.position = 'absolute';
       }
-    } else {
-      // Mock gui so code doesn't break
-      gui = {
-         add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }),
-         addFolder: () => ({ add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }), open: () => ({}) })
-      };
-    }
+     } else {
+       // Mock gui so code doesn't break
+       gui = {
+          add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }),
+          addFolder: () => ({ add: () => ({ name: () => ({ onChange: () => ({}), onFinishChange: () => ({}) }) }), open: () => ({}) }),
+          controllers: []
+       };
+     }
 
     gui.add(CONFIG, 'shape', [
       'Atom Orbitals', 'Black Hole', 'Cosmic Web', 'DNA', 'Galaxy', 
@@ -713,24 +714,26 @@ const UniverseEngine = ({
       controls.autoRotate = v;
     });
     
-    // Store controller references to update them
-    const cameraControllers = [];
-    
-    // Default camera position controls (separate folder)
-    const f3 = gui.addFolder('>> DEFAULT_CAM');
-    f3.add(CONFIG, 'defaultCamX', -50, 50).name('DEF_X');
-    f3.add(CONFIG, 'defaultCamY', -50, 50).name('DEF_Y');
-    f3.add(CONFIG, 'defaultCamZ', 1, 100).name('DEF_Z');
-    f3.add(CONFIG, 'defaultZoom', 0.1, 5).name('DEF_ZOOM');
-    
-    // Now collect controllers AFTER they've been created
-    if (gui.controllers && Array.isArray(gui.controllers)) {
-      gui.controllers.forEach(c => {
-        if (c._name === 'CAM_X' || c._name === 'CAM_Y' || c._name === 'CAM_Z' || c._name === 'ZOOM') {
-          cameraControllers.push(c);
-        }
-      });
-    }
+     // Store controller references to update them
+     const cameraControllers = [];
+     
+     // Default camera position controls (separate folder)
+     const f3 = gui.addFolder('>> DEFAULT_CAM');
+     f3.add(CONFIG, 'defaultCamX', -50, 50).name('DEF_X');
+     f3.add(CONFIG, 'defaultCamY', -50, 50).name('DEF_Y');
+     f3.add(CONFIG, 'defaultCamZ', 1, 100).name('DEF_Z');
+     f3.add(CONFIG, 'defaultZoom', 0.1, 5).name('DEF_ZOOM');
+     
+     // Now collect controllers AFTER they've been created
+     setTimeout(() => {
+       if (gui.controllers && Array.isArray(gui.controllers)) {
+         gui.controllers.forEach(c => {
+           if (c && c._name === 'CAM_X' || c._name === 'CAM_Y' || c._name === 'CAM_Z' || c._name === 'ZOOM') {
+             cameraControllers.push(c);
+           }
+         });
+       }
+     }, 0);
     
     // Update camera controls from actual camera values in tick loop
     const updateCameraControls = () => {
@@ -768,8 +771,6 @@ const UniverseEngine = ({
 
     buildUniverse();
 
-    buildUniverse();
-
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     
@@ -794,27 +795,29 @@ const UniverseEngine = ({
       transitionZoom: 1
     };
 
-    const tick = () => {
-      const dt = clock.getDelta();
-      accumulatedTime += dt * CONFIG.timeScale;
+     const tick = () => {
+       const dt = clock.getDelta();
+       accumulatedTime += dt * CONFIG.timeScale;
 
-      if(material) {
-        material.uniforms.uTime.value = accumulatedTime;
+       if (material && material.uniforms && material.uniforms.uTime) {
+         material.uniforms.uTime.value = accumulatedTime;
         
-        // Scale down particle size during transition to prevent intense additive bloom/flash bang when shrinking
-        let sizeScale = 1.0;
-        if (isTransitioning) {
-          if (shape === 'Black Hole') {
-            sizeScale = transitionDirection === 'out' ? 1.0 - transitionProgress : transitionProgress;
-          } else if (shape === 'Quantum Knot') {
-            sizeScale = transitionDirection === 'in' ? transitionProgress : 1.0 - transitionProgress;
-          }
-        }
-        
-        material.uniforms.uSize.value = (CONFIG.particleSize * 1000 * Math.min(window.devicePixelRatio, 2)) * sizeScale;
-        if(material.uniforms.uOpacity) {
-            material.uniforms.uOpacity.value = sizeScale; // since opacityScale = sizeScale logic
-        }
+         // Scale down particle size during transition to prevent intense additive bloom/flash bang when shrinking
+         let sizeScale = 1.0;
+         if (isTransitioning) {
+           if (shape === 'Black Hole') {
+             sizeScale = transitionDirection === 'out' ? 1.0 - transitionProgress : transitionProgress;
+           } else if (shape === 'Quantum Knot') {
+             sizeScale = transitionDirection === 'in' ? transitionProgress : 1.0 - transitionProgress;
+           }
+         }
+         
+         if (material.uniforms.uSize) {
+           material.uniforms.uSize.value = (CONFIG.particleSize * 1000 * Math.min(window.devicePixelRatio, 2)) * sizeScale;
+         }
+         if(material.uniforms.uOpacity) {
+             material.uniforms.uOpacity.value = sizeScale; // since opacityScale = sizeScale logic
+         }
       }
       
       if(CONFIG.gravity > 0 && material) {
@@ -861,10 +864,12 @@ const UniverseEngine = ({
       
       // Only continue if not paused
       if (!isPausedRef.current) {
-        // Throttle to 30fps on mobile
-        const now = performance.now();
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const targetFPS = isMobile ? 33.33 : 16.67;
+         // Throttle to 30fps on mobile
+         const now = performance.now();
+         const isMobile = typeof navigator !== 'undefined' && navigator.userAgent 
+           ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+           : false;
+         const targetFPS = isMobile ? 33.33 : 16.67;
         const delay = Math.max(0, targetFPS - (now - lastTimeRef.current));
         
         lastTimeRef.current = now;
@@ -923,9 +928,7 @@ const UniverseEngine = ({
   }, []);
 
   return (
-    <div ref={containerRef} className="universe-container">
-      <div className="cinematic-bar top"></div>
-      <div className="cinematic-bar bottom"></div>
+    <div ref={containerRef} className="universe-engine universe-container">
     </div>
   );
 };

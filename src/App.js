@@ -52,7 +52,7 @@ function App() {
     const handleWheel = (e) => {
       if (isTransitioning || scrolling || activePage === 0) return;
 
-      if (e.deltaY > 30 && activePage < 5) {
+      if (e.deltaY > 30 && activePage < 4) {
         setTargetPage(activePage + 1);
         scrolling = true;
       } else if (e.deltaY < -30 && activePage > 1) {
@@ -119,25 +119,20 @@ function App() {
     return activePage === pageNum || targetPage === pageNum;
   };
 
-  // Universal Cinematic Controller - handles ALL page transitions
+   // Universal Cinematic Controller - handles ALL page transitions
   useEffect(() => {
-    // Get all cinematic bars across all pages
-    const allBars = document.querySelectorAll('.cinematic-bar');
+    // Get all cinema containers across all pages
+    const allContainers = document.querySelectorAll('.universe-container');
     
-    if (isTransitioning) {
-      // Hide bars smoothly during transitions
-      allBars.forEach(bar => {
-        bar.style.height = '0px';
-      });
-    } else if (activePage > 0) {
-      // Show bars when page is settled
-      allBars.forEach(bar => {
-        bar.style.height = '200px';
+    if (isTransitioning || activePage === 0) {
+      // Hide bars smoothly during transitions or on start page
+      allContainers.forEach(container => {
+        container.classList.remove('cinema');
       });
     } else {
-      // Hide completely on start page
-      allBars.forEach(bar => {
-        bar.style.height = '0px';
+      // Show bars when page is settled
+      allContainers.forEach(container => {
+        container.classList.add('cinema');
       });
     }
   }, [isTransitioning, activePage]);
@@ -188,7 +183,7 @@ function App() {
           guiTitle=">> UNIVERSE_ENGINE.EXE"
           isActive={isPageActive(1)}
           isTransitioning={isTransitioning && isPageActive(1)}
-          transitionProgress={targetPage === 1 && activePage !== 1 ? 1 - transitionProgress : transitionProgress}
+           transitionProgress={transitionProgress}
           transitionDirection={targetPage > activePage ? "out" : "in"}
         />
         <CyberCallout show={isPageActive(1) && !isTransitioning} variant="top-left" top="20%" left="10%" title="EVENT HORIZON" text="DETECTED: Infinite Gravity Well. Spacetime curvature mapping nominal." delay={0.2} />
@@ -211,8 +206,8 @@ function App() {
           guiTitle=">> PAGE_2_ENGINE.EXE"
           isActive={activePage === 2 || targetPage === 2}
           isTransitioning={isTransitioning && (activePage === 2 || targetPage === 2)}
-          transitionProgress={targetPage === 2 && activePage !== 2 ? transitionProgress : 1 - transitionProgress}
-          transitionDirection={targetPage === 2 && activePage === 1 ? "in" : "out"}
+           transitionProgress={transitionProgress}
+           transitionDirection={targetPage > activePage ? "in" : "out"}
         />
         <CyberCallout show={isPageActive(2) && !isTransitioning} variant="top-right" top="25%" right="10%" title="UNCERTAINTY PRINCIPLE" text="STATE: ENTANGLED. Multiple probabilities collapsing." delay={0.3} />
         <CyberCallout show={isPageActive(2) && !isTransitioning} variant="bottom-left" bottom="25%" left="12%" title="DIMENSIONAL WARP" text="CALDABI-YAU MANIFOLD FLUX. Spatial compression detected." delay={0.8} />
