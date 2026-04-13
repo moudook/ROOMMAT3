@@ -163,10 +163,13 @@ function App() {
         {mountedPages.has(1) && (
           <UniverseEngine 
             shape="Black Hole"
+            initialCamX={-33.6}
+            initialCamY={-30.7}
             defaultCamX={-5.11}
             defaultCamY={2.50}
             defaultCamZ={-8.90}
             defaultZoom={1.38}
+            initialZoom={0.5}
             cinematic={false}
             guiTitle=">> BLACK_HOLE.EXE"
             isActive={isPageActive(1)}
@@ -176,9 +179,9 @@ function App() {
             transitionDirection={activePage === 1 ? "out" : "in"}
           />
         )}
-        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="top-left" top="20%" left="10%" title="EVENT HORIZON" text="DETECTED: Infinite Gravity Well. Spacetime curvature mapping nominal." delay={0.2} />
-        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="bottom-right" bottom="25%" right="10%" title="PHOTON SPHERE" text="ORBITAL VELOCITY: 299,792 km/s. Photons captured." delay={0.6} />
-        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="bottom-left" bottom="20%" left="15%" title="SINGULARITY" text="MASS: SUPERMASSIVE. Core density algorithms failing." delay={1.0} />
+        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="top-left" top="20%" left="10%" title="POINT of NO RETURN" text="beyond this line, even LIGHT kneels. time dilates to a whisper. your past becomes someone else's future." delay={0.2} />
+        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="bottom-right" bottom="25%" right="10%" title="the LAST ORBIT" text="photons circle FOREVER here — trapped in a prison made of curved space. every color you've ever seen, LOCKED in an endless loop." delay={0.6} />
+        <CyberCallout show={isPageActive(1) && !isTransitioning} variant="bottom-left" bottom="20%" left="15%" title="what FALLS in" text="nothing escapes. not memory. not TIME. not the version of you that existed one second ago. the singularity doesn't destroy — it REMEMBERS." delay={1.0} />
       </div>
 
       {/* Page 2 - Quantum Knot */}
@@ -202,8 +205,8 @@ function App() {
             transitionDirection={activePage === 2 ? "out" : "in"}
           />
         )}
-        <CyberCallout show={isPageActive(2) && !isTransitioning} variant="top-right" top="25%" right="10%" title="UNCERTAINTY PRINCIPLE" text="STATE: ENTANGLED. Multiple probabilities collapsing." delay={0.3} />
-        <CyberCallout show={isPageActive(2) && !isTransitioning} variant="bottom-left" bottom="25%" left="12%" title="DIMENSIONAL WARP" text="CALDABI-YAU MANIFOLD FLUX. Spatial compression detected." delay={0.8} />
+        <CyberCallout show={isPageActive(2) && !isTransitioning} variant="top-right" top="25%" right="10%" title="ENTANGLED" text="measure one particle HERE and its twin SHIVERS on the other side of the universe. distance is a lie that MATTER tells itself." delay={0.3} />
+        <CyberCallout show={isPageActive(2) && !isTransitioning} variant="bottom-left" bottom="25%" left="12%" title="the KNOT that THINKS" text="11 dimensions folded into a space smaller than nothing. every possible universe is a THREAD in this braid. you're living inside one of them RIGHT NOW." delay={0.8} />
       </div>
 
       {/* Page 3 - Cosmic Web */}
@@ -224,8 +227,8 @@ function App() {
             disableGui={true}
           />
         )}
-        <CyberCallout show={isPageActive(3) && !isTransitioning} variant="top-left" top="20%" left="15%" title="DARK MATTER FILAMENT" text="DENSITY: CRITICAL. Binding galactic superstructures." delay={0.2} />
-        <CyberCallout show={isPageActive(3) && !isTransitioning} variant="bottom-right" bottom="25%" right="10%" title="GALACTIC CLUSTER" text="NODES: 42,000. Baryonic mapping actively streaming." delay={0.7} />
+        <CyberCallout show={isPageActive(3) && !isTransitioning} variant="top-left" top="20%" left="15%" title="the INVISIBLE SKELETON" text="96% of the universe is made of something we CANNOT see, touch, or name. dark matter is the architect — we are just the decoration." delay={0.2} />
+        <CyberCallout show={isPageActive(3) && !isTransitioning} variant="bottom-right" bottom="25%" right="10%" title="CONNECTED" text="every galaxy hangs on threads of INVISIBLE fire. pull one strand and a billion stars tremble. the web was here before light EXISTED." delay={0.7} />
       </div>
 
       {/* Page 4 - Quasar */}
@@ -246,8 +249,8 @@ function App() {
             disableGui={true}
           />
         )}
-        <CyberCallout show={isPageActive(4) && !isTransitioning} variant="top-right" top="22%" right="12%" title="ACCRETION DISK" text="TEMPERATURE: 10^7 K. Hyper-friction plasma generation active." delay={0.2} />
-        <CyberCallout show={isPageActive(4) && !isTransitioning} variant="bottom-left" bottom="25%" left="15%" title="RELATIVISTIC JET" text="OUTPUT: 10^42 WATTS. Magnetic field acceleration beyond c-limit." delay={0.6} />
+        <CyberCallout show={isPageActive(4) && !isTransitioning} variant="top-right" top="22%" right="12%" title="BRIGHTEST THING that EVER WAS" text="outshining a TRILLION suns. a beacon visible from the edge of creation. the universe's way of screaming I AM HERE." delay={0.2} />
+        <CyberCallout show={isPageActive(4) && !isTransitioning} variant="bottom-left" bottom="25%" left="15%" title="MATTER at the SPEED of THOUGHT" text="plasma jets fired at 99.9% lightspeed — reality BENDS around them. a single jet carries more energy than our sun will produce in its ENTIRE lifetime." delay={0.6} />
       </div>
 
       {/* Page 5 - Footer */}

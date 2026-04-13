@@ -10,10 +10,13 @@ import './UniverseEngine.css';
 
 const UniverseEngine = ({ 
   shape = 'Black Hole',
+  initialCamX = 0,
+  initialCamY = 0,
   defaultCamX = 0,
   defaultCamY = 2,
   defaultCamZ = 14,
   defaultZoom = 1,
+  initialZoom = 1,
   cinematic = true,
   guiTitle = '>> UNIVERSE_ENGINE.EXE',
   isActive = true,
@@ -146,9 +149,9 @@ const UniverseEngine = ({
     
     const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100);
     
-    // Camera starts directly at default position
-    camera.position.set(CONFIG.defaultCamX, CONFIG.defaultCamY, CONFIG.defaultCamZ);
-    camera.zoom = CONFIG.defaultZoom;
+    // Initial camera position (starting point for animation)
+    camera.position.set(initialCamX, initialCamY, CONFIG.defaultCamZ);
+    camera.zoom = initialZoom;
     camera.updateProjectionMatrix();
 
     const controls = new OrbitControls(camera, canvas);
@@ -719,6 +722,19 @@ const UniverseEngine = ({
     
     let accumulatedTime = 0;
     
+    // Camera animation state
+    const cameraAnimation = {
+      startX: initialCamX,
+      startY: initialCamY,
+      startZoom: initialZoom,
+      endX: CONFIG.defaultCamX,
+      endY: CONFIG.defaultCamY,
+      endZoom: CONFIG.defaultZoom,
+      duration: 5.0, // seconds
+      elapsed: 0,
+      active: true
+    };
+
      const tick = () => {
        const dt = clock.getDelta();
        accumulatedTime += dt * CONFIG.timeScale;
@@ -748,6 +764,28 @@ const UniverseEngine = ({
         material.uniforms.uGravity.value = THREE.MathUtils.lerp(material.uniforms.uGravity.value, 1.0, 0.1);
       } else if (material) {
         material.uniforms.uGravity.value = THREE.MathUtils.lerp(material.uniforms.uGravity.value, 0.0, 0.1);
+      }
+
+      // Camera animation
+      if (cameraAnimation.active) {
+        cameraAnimation.elapsed += dt;
+        const progress = Math.min(cameraAnimation.elapsed / cameraAnimation.duration, 1.0);
+        
+        // Ease out cubic
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        
+        camera.position.x = THREE.MathUtils.lerp(cameraAnimation.startX, cameraAnimation.endX, easedProgress);
+        camera.position.y = THREE.MathUtils.lerp(cameraAnimation.startY, cameraAnimation.endY, easedProgress);
+        camera.zoom = THREE.MathUtils.lerp(cameraAnimation.startZoom, cameraAnimation.endZoom, easedProgress);
+        camera.updateProjectionMatrix();
+        
+        // Disable OrbitControls during animation to prevent override
+        controls.enabled = false;
+        
+        if (progress >= 1.0) {
+          cameraAnimation.active = false;
+          controls.enabled = true;
+        }
       }
 
       // Transition camera zoom - universal for ALL shapes
