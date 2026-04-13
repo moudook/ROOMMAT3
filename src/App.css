@@ -181,6 +181,11 @@ html, body {
   object-fit: cover;
 }
 
+.footer-shape-box .camera-info,
+.footer-shape-box .cinematic-bar {
+  display: none;
+}
+
 .footer-shape-text {
   font-family: 'Fira Code', monospace;
   color: #fff;
