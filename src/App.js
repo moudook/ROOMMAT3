@@ -14,6 +14,10 @@ function App() {
   const [mountedPages, setMountedPages] = useState(new Set([0]));
   const audioRef = useRef(null);
   const containerRef = useRef(null);
+  const touchStartRef = useRef(null);
+
+  // Mobile detection
+  const isMobile = typeof window !== 'undefined' && (window.innerWidth <= 768 || 'ontouchstart' in window);
 
   // Initialize audio but don't autoplay
   useEffect(() => {
@@ -74,8 +78,37 @@ function App() {
       setTimeout(() => { scrolling = false; }, 1200);
     };
 
+    // Touch swipe navigation for mobile
+    let touchScrolling = false;
+    const handleTouchStart = (e) => {
+      touchStartRef.current = { y: e.touches[0].clientY, time: Date.now() };
+    };
+    const handleTouchEnd = (e) => {
+      if (!touchStartRef.current || isTransitioning || touchScrolling || activePage === 0) return;
+      const deltaY = touchStartRef.current.y - e.changedTouches[0].clientY;
+      const elapsed = Date.now() - touchStartRef.current.time;
+      // Require minimum 50px swipe within 800ms
+      if (Math.abs(deltaY) > 50 && elapsed < 800) {
+        if (deltaY > 0 && activePage < 5) {
+          setTargetPage(activePage + 1);
+          touchScrolling = true;
+        } else if (deltaY < 0 && activePage > 1) {
+          setTargetPage(activePage - 1);
+          touchScrolling = true;
+        }
+        setTimeout(() => { touchScrolling = false; }, 1200);
+      }
+      touchStartRef.current = null;
+    };
+
     window.addEventListener('wheel', handleWheel);
-    return () => window.removeEventListener('wheel', handleWheel);
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    return () => {
+      window.removeEventListener('wheel', handleWheel);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchend', handleTouchEnd);
+    };
   }, [activePage, isTransitioning]);
 
   useEffect(() => {
@@ -134,7 +167,7 @@ function App() {
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 0, opacity: 0.6, pointerEvents: 'none' }}>
             <UniverseEngine 
                shape="Wormhole"
-               particleCountOverride={25000}
+               particleCountOverride={isMobile ? 10000 : 25000}
                disableGui={true}
                cinematic={false}
                isActive={isPageActive(0)}
@@ -272,7 +305,7 @@ function App() {
                   <div className="footer-shape-box">
                     <UniverseEngine 
                       shape={s.shape}
-                      particleCountOverride={8000}
+                      particleCountOverride={isMobile ? 3000 : 8000}
                       disableGui={true}
                       cinematic={false}
                       isActive={isPageActive(5)}

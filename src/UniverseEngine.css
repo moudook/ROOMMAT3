@@ -75,3 +75,18 @@
 }
 .top { top: 0; } .bottom { bottom: 0; }
 .universe-container.cinema .cinematic-bar { height: 200px; }
+
+/* ====== MOBILE RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .universe-container.cinema .cinematic-bar {
+    height: 50px;
+  }
+
+  .camera-info {
+    display: none;
+  }
+
+  .universe-container .lil-gui {
+    display: none !important;
+  }
+}

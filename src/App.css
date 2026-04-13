@@ -220,3 +220,115 @@ html, body {
   text-transform: uppercase;
   transform: rotate(180deg);
 }
+
+/* ====== MOBILE RESPONSIVE ====== */
+@media (max-width: 768px) {
+  /* Start Screen */
+  .start-title {
+    font-size: 2.2rem;
+    letter-spacing: 0.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .cyber-terminal-header {
+    font-size: 0.6rem;
+    letter-spacing: 0.15rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .cyber-glitch-btn {
+    font-size: 0.85rem;
+    padding: 1rem 2.2rem;
+    letter-spacing: 0.3rem;
+    margin-bottom: 2rem;
+  }
+
+  .cyber-glitch-btn:hover {
+    letter-spacing: 0.35rem;
+  }
+
+  .start-subtitle {
+    font-size: 0.65rem;
+    letter-spacing: 0.15rem;
+  }
+
+  /* Footer Layout — stack vertically */
+  .footer-layout {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    justify-content: flex-start;
+    overflow-y: auto;
+  }
+
+  .footer-shapes-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    flex: none;
+    width: 100%;
+  }
+
+  .footer-shape-column {
+    width: 100%;
+  }
+
+  .footer-shape-box {
+    width: 100%;
+    height: 36vw;
+  }
+
+  .footer-shape-text {
+    font-size: 0.6rem;
+  }
+
+  .footer-shape-sub {
+    font-size: 0.5rem;
+  }
+
+  .footer-title-container {
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-left: 0;
+    padding-top: 1rem;
+    height: auto;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .footer-title {
+    writing-mode: horizontal-tb;
+    text-orientation: initial;
+    transform: none;
+    font-size: 1.8rem;
+    letter-spacing: 0.3rem;
+    text-align: center;
+  }
+}
+
+@media (max-width: 400px) {
+  .start-title {
+    font-size: 1.6rem;
+    letter-spacing: 0.3rem;
+    margin-bottom: 2rem;
+  }
+
+  .cyber-glitch-btn {
+    font-size: 0.75rem;
+    padding: 0.8rem 1.8rem;
+    letter-spacing: 0.2rem;
+  }
+
+  .footer-shapes-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .footer-shape-box {
+    height: 38vw;
+  }
+
+  .footer-title {
+    font-size: 1.4rem;
+  }
+}

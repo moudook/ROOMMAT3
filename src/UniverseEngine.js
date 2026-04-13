@@ -93,9 +93,10 @@ const UniverseEngine = ({
 
   useEffect(() => {
     // --- MASTER CONFIG ---
+    const isMobileDevice = window.innerWidth <= 768 || 'ontouchstart' in window;
     const CONFIG = {
       shape: shape,
-      count: particleCountOverride || 50540,
+      count: particleCountOverride || (isMobileDevice ? 25000 : 50540),
       particleSize: 0.025,
       
       radius: 6,
@@ -141,7 +142,7 @@ const UniverseEngine = ({
     const height = container.clientHeight || window.innerHeight;
     
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobileDevice ? 1.0 : 1.5));
     renderer.toneMapping = THREE.ReinhardToneMapping;
 
     const scene = new THREE.Scene();
@@ -710,8 +711,9 @@ const UniverseEngine = ({
     buildUniverse();
 
     // Half-res bloom for performance
-    const bloomW = Math.floor(width / 2);
-    const bloomH = Math.floor(height / 2);
+    const bloomDivisor = isMobileDevice ? 3 : 2;
+    const bloomW = Math.floor(width / bloomDivisor);
+    const bloomH = Math.floor(height / bloomDivisor);
     const composer = new EffectComposer(renderer);
     composer.addPass(new RenderPass(scene, camera));
     const bloom = new UnrealBloomPass(new THREE.Vector2(bloomW, bloomH), 1.5, 0.4, 0.0);

@@ -120,3 +120,47 @@
 .bottom-right .callout-dot {
   top: 0;
 }
+
+/* ====== MOBILE RESPONSIVE ====== */
+@media (max-width: 768px) {
+  .cyber-callout {
+    width: 150px;
+  }
+
+  .callout-title {
+    font-size: 10px;
+    letter-spacing: 1px;
+    margin-bottom: 2px;
+  }
+
+  .callout-text {
+    font-size: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  .callout-content {
+    padding: 5px;
+  }
+
+  .line-angled {
+    height: 50px;
+  }
+}
+
+@media (max-width: 400px) {
+  .cyber-callout {
+    width: 120px;
+  }
+
+  .callout-title {
+    font-size: 9px;
+  }
+
+  .callout-text {
+    font-size: 7px;
+  }
+
+  .line-angled {
+    height: 35px;
+  }
+}
