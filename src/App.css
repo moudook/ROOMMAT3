@@ -1,0 +1,220 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background-color: #000;
+}
+
+.container {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.page {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 100vw;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.page.active {
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.page-0 { background-color: #000; }
+.page-1 { background-color: #000; }
+.page-2 { background-color: #000; }
+.page-3 { background-color: #000; }
+.page-4 { background-color: #000; }
+.page-5 { background-color: #000; }
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Grotesk:wght@300;400;500&display=swap');
+
+.start-screen {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(ellipse at center, #220000 0%, #000000 70%, #000000 100%);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.start-screen::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(255, 0, 0, 0.08) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyber-terminal-header {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.8rem;
+  color: rgba(255, 50, 50, 0.6);
+  letter-spacing: 0.4rem;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+}
+
+.start-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 5rem;
+  font-weight: 300;
+  color: #ff3333;
+  letter-spacing: 1.5rem;
+  margin-bottom: 4rem;
+  text-transform: uppercase;
+  z-index: 2;
+  position: relative;
+  opacity: 0.9;
+  text-shadow: 0 0 20px rgba(255, 0, 0, 0.5), 0 0 50px rgba(255, 0, 0, 0.3);
+}
+
+.cyber-glitch-btn {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(255, 80, 80, 0.8);
+  background: transparent;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  padding: 1.2rem 4rem;
+  cursor: pointer;
+  letter-spacing: 0.5rem;
+  transition: all 0.5s ease;
+  margin-bottom: 3rem;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 3;
+}
+
+.cyber-glitch-btn:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ffcccc;
+  border-color: rgba(255, 50, 50, 0.8);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+  letter-spacing: 0.6rem;
+}
+
+.start-subtitle {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: rgba(255, 50, 50, 0.4);
+  letter-spacing: 0.3rem;
+  text-transform: uppercase;
+  z-index: 2;
+  animation: breathe 4s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; text-shadow: 0 0 10px rgba(255, 0, 0, 0.5); }
+}
+
+.footer-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  padding: 3rem;
+  box-sizing: border-box;
+  background-color: #000;
+  position: relative;
+  z-index: 10;
+}
+
+.footer-shapes-container {
+  display: flex;
+  gap: 2rem;
+  flex: 1;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.footer-shape-column {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 12vw;
+}
+
+.footer-shape-box {
+  width: 12vw;
+  height: 12vw;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.02);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 15px rgba(255,255,255,0.05);
+}
+
+.footer-shape-box > div {
+  width: 100%;
+  height: 100%;
+}
+
+.footer-shape-box canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}
+
+.footer-shape-text {
+  font-family: 'Fira Code', monospace;
+  color: #fff;
+  font-size: 0.7rem;
+  margin: 0.5rem 0 0 0;
+  text-align: left;
+  font-weight: 700;
+}
+
+.footer-shape-sub {
+  font-family: 'Fira Code', monospace;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.6rem;
+  margin: 0;
+  text-align: left;
+}
+
+.footer-title-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  padding-left: 2rem;
+  height: 70vh;
+}
+
+.footer-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 4rem;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5rem;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  margin: 0;
+  text-transform: uppercase;
+  transform: rotate(180deg);
+}

@@ -1,0 +1,122 @@
+.cyber-callout {
+  position: absolute;
+  color: #fff;
+  font-family: 'Fira Code', monospace;
+  width: 220px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+  pointer-events: none; /* Let clicks pass through to UniverseEngine */
+}
+
+.cyber-callout.show {
+  animation: calloutFadeIn 0.8s ease-out forwards;
+  animation-delay: var(--animation-delay);
+}
+
+@keyframes calloutFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.callout-content {
+  padding-bottom: 4px;
+  border-bottom: 2px solid #ccc;
+  box-shadow: 0 1px 5px -1px rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 2;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(255,255,255,0.05) 100%);
+  padding: 8px;
+  border-radius: 4px 4px 0 0;
+}
+
+.callout-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.callout-text {
+  font-size: 10px;
+  opacity: 0.9;
+  letter-spacing: 0.5px;
+  color: #ccc;
+}
+
+/* Base line styles */
+.line-angled {
+  position: absolute;
+  width: 2px;
+  height: 90px;
+  background-color: #ccc;
+  box-shadow: 0 0 5px rgba(255,255,255,0.5);
+  z-index: 1;
+}
+
+.callout-dot {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #fff;
+  box-shadow: 0 0 8px #fff, 0 0 15px rgba(255,255,255,0.8);
+}
+
+/* TOP-LEFT */
+.top-left { text-align: left; }
+.top-left .line-angled {
+  top: 100%;
+  right: 0;
+  transform-origin: top right;
+  transform: rotate(-55deg);
+}
+.top-left .callout-dot {
+  bottom: 0;
+}
+
+/* BOTTOM-LEFT */
+.bottom-left { text-align: left; }
+.bottom-left .line-angled {
+  bottom: 0px;
+  right: 0;
+  transform-origin: bottom right;
+  transform: rotate(55deg);
+}
+.bottom-left .callout-dot {
+  top: 0;
+}
+
+/* TOP-RIGHT */
+.top-right { text-align: right; }
+.top-right .line-angled {
+  top: 100%;
+  left: 0;
+  transform-origin: top left;
+  transform: rotate(55deg);
+}
+.top-right .callout-dot {
+  bottom: 0;
+}
+
+/* BOTTOM-RIGHT */
+.bottom-right { text-align: right; }
+.bottom-right .line-angled {
+  bottom: 0px;
+  left: 0;
+  transform-origin: bottom left;
+  transform: rotate(-55deg);
+}
+.bottom-right .callout-dot {
+  top: 0;
+}
