@@ -31,6 +31,9 @@ const UniverseEngine = ({
   const containerRef = useRef(null);
   const guiRef = useRef(null);
   const materialRef = useRef(null);
+  const cameraAnimationRef = useRef(null);
+  const cameraRef = useRef(null);
+  const controlsRef = useRef(null);
   
   // Refs for props used in tick function to avoid stale closures
   const isTransitioningRef = useRef(isTransitioning);
@@ -79,16 +82,32 @@ const UniverseEngine = ({
   const lastTimeRef = useRef(0);
   const isPausedRef = useRef(!isActive);
   const tickRef = useRef(null);
+  const wasActiveRef = useRef(isActive);
 
   useEffect(() => {
+    const wasPaused = isPausedRef.current;
     isPausedRef.current = !isActive;
+    
+    // If becoming active again (was inactive → now active), reset camera to defaults
+    if (isActive && wasPaused && cameraAnimationRef.current && cameraRef.current) {
+      const cam = cameraRef.current;
+      cameraAnimationRef.current.startX = cam.position.x;
+      cameraAnimationRef.current.startY = cam.position.y;
+      cameraAnimationRef.current.endX = defaultCamX;
+      cameraAnimationRef.current.endY = defaultCamY;
+      cameraAnimationRef.current.elapsed = 0;
+      cameraAnimationRef.current.duration = 1.5; // faster reset than initial
+      cameraAnimationRef.current.active = true;
+    }
     
     // If becoming active and we have a tick function, resume
     if (isActive && tickRef.current && animationRef.current === null) {
       lastTimeRef.current = performance.now();
       tickRef.current();
     }
-  }, [isActive]);
+    
+    wasActiveRef.current = isActive;
+  }, [isActive, defaultCamX, defaultCamY]);
 
   useEffect(() => {
     // --- MASTER CONFIG ---
@@ -160,6 +179,10 @@ const UniverseEngine = ({
     controls.maxDistance = 40;
     controls.autoRotate = true;
     controls.autoRotateSpeed = CONFIG.spinSpeed;
+    
+    // Store refs for re-activation camera reset
+    cameraRef.current = camera;
+    controlsRef.current = controls;
 
     // --- TEXTURES ---
     const getTexture = () => {
@@ -732,6 +755,7 @@ const UniverseEngine = ({
       active: true,
       transitionZoom: 1
     };
+    cameraAnimationRef.current = cameraAnimation;
 
      const tick = () => {
        const dt = clock.getDelta();
@@ -799,6 +823,12 @@ const UniverseEngine = ({
       // Update camera control sliders to reflect actual camera position
       updateCameraControls();
       
+      // Update camera position display
+      const cameraInfo = container.querySelector('.camera-info');
+      if (cameraInfo) {
+        cameraInfo.textContent = `CAM_POS: X: ${camera.position.x.toFixed(2)} Y: ${camera.position.y.toFixed(2)} Z: ${camera.position.z.toFixed(2)} | ZOOM: ${camera.zoom.toFixed(2)}`;
+      }
+      
       // Safety check before rendering
       if (composer && renderer && scene && camera) {
         composer.render();
@@ -860,6 +890,7 @@ const UniverseEngine = ({
     <div ref={containerRef} className="universe-container">
       <div className="cinematic-bar top"></div>
       <div className="cinematic-bar bottom"></div>
+      <div className="camera-info">CAM_POS: X: 0.00 Y: 0.00 Z: 0.00 | ZOOM: 1.00</div>
     </div>
   );
 };

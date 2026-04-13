@@ -165,10 +165,10 @@ function App() {
             shape="Black Hole"
             initialCamX={-33.6}
             initialCamY={-30.7}
-            defaultCamX={-10.2}
-            defaultCamY={2.5}
-            defaultCamZ={10.186}
-            defaultZoom={1.3867}
+            defaultCamX={-5.11}
+            defaultCamY={2.50}
+            defaultCamZ={-8.90}
+            defaultZoom={1.38}
             cinematic={false}
             guiTitle=">> BLACK_HOLE.EXE"
             isActive={isPageActive(1)}
