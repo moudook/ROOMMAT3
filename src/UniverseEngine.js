@@ -10,12 +10,10 @@ import './UniverseEngine.css';
 
 const UniverseEngine = ({ 
   shape = 'Black Hole',
-  initialCamX = -33.6,
-  initialCamY = -30.7,
-  defaultCamX = -10.2,
-  defaultCamY = 2.5,
-  defaultCamZ = 10.186,
-  defaultZoom = 1.3867,
+  defaultCamX = 0,
+  defaultCamY = 2,
+  defaultCamZ = 14,
+  defaultZoom = 1,
   cinematic = true,
   guiTitle = '>> UNIVERSE_ENGINE.EXE',
   isActive = true,
@@ -31,9 +29,6 @@ const UniverseEngine = ({
   const containerRef = useRef(null);
   const guiRef = useRef(null);
   const materialRef = useRef(null);
-  const cameraAnimationRef = useRef(null);
-  const cameraRef = useRef(null);
-  const controlsRef = useRef(null);
   
   // Refs for props used in tick function to avoid stale closures
   const isTransitioningRef = useRef(isTransitioning);
@@ -82,32 +77,16 @@ const UniverseEngine = ({
   const lastTimeRef = useRef(0);
   const isPausedRef = useRef(!isActive);
   const tickRef = useRef(null);
-  const wasActiveRef = useRef(isActive);
 
   useEffect(() => {
-    const wasPaused = isPausedRef.current;
     isPausedRef.current = !isActive;
-    
-    // If becoming active again (was inactive → now active), reset camera to defaults
-    if (isActive && wasPaused && cameraAnimationRef.current && cameraRef.current) {
-      const cam = cameraRef.current;
-      cameraAnimationRef.current.startX = cam.position.x;
-      cameraAnimationRef.current.startY = cam.position.y;
-      cameraAnimationRef.current.endX = defaultCamX;
-      cameraAnimationRef.current.endY = defaultCamY;
-      cameraAnimationRef.current.elapsed = 0;
-      cameraAnimationRef.current.duration = 1.5; // faster reset than initial
-      cameraAnimationRef.current.active = true;
-    }
     
     // If becoming active and we have a tick function, resume
     if (isActive && tickRef.current && animationRef.current === null) {
       lastTimeRef.current = performance.now();
       tickRef.current();
     }
-    
-    wasActiveRef.current = isActive;
-  }, [isActive, defaultCamX, defaultCamY]);
+  }, [isActive]);
 
   useEffect(() => {
     // --- MASTER CONFIG ---
@@ -167,8 +146,8 @@ const UniverseEngine = ({
     
     const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 100);
     
-    // Initial camera position (starting point for animation)
-    camera.position.set(initialCamX, initialCamY, CONFIG.defaultCamZ);
+    // Camera starts directly at default position
+    camera.position.set(CONFIG.defaultCamX, CONFIG.defaultCamY, CONFIG.defaultCamZ);
     camera.zoom = CONFIG.defaultZoom;
     camera.updateProjectionMatrix();
 
@@ -179,10 +158,6 @@ const UniverseEngine = ({
     controls.maxDistance = 40;
     controls.autoRotate = true;
     controls.autoRotateSpeed = CONFIG.spinSpeed;
-    
-    // Store refs for re-activation camera reset
-    cameraRef.current = camera;
-    controlsRef.current = controls;
 
     // --- TEXTURES ---
     const getTexture = () => {
@@ -744,19 +719,6 @@ const UniverseEngine = ({
     
     let accumulatedTime = 0;
     
-    // Camera animation state
-    const cameraAnimation = {
-      startX: initialCamX,
-      startY: initialCamY,
-      endX: CONFIG.defaultCamX,
-      endY: CONFIG.defaultCamY,
-      duration: 3.0, // seconds
-      elapsed: 0,
-      active: true,
-      transitionZoom: 1
-    };
-    cameraAnimationRef.current = cameraAnimation;
-
      const tick = () => {
        const dt = clock.getDelta();
        accumulatedTime += dt * CONFIG.timeScale;
@@ -764,7 +726,7 @@ const UniverseEngine = ({
        if (material && material.uniforms && material.uniforms.uTime) {
          material.uniforms.uTime.value = accumulatedTime;
         
-         // Scale down particle size during transition to prevent intense additive bloom/flash bang when shrinking
+         // Scale down particle size during transition
          let sizeScale = 1.0;
          if (isTransitioningRef.current) {
            if (shapeRef.current === 'Black Hole') {
@@ -778,7 +740,7 @@ const UniverseEngine = ({
            material.uniforms.uSize.value = (CONFIG.particleSize * 1000 * Math.min(window.devicePixelRatio, 2)) * sizeScale;
          }
          if(material.uniforms.uOpacity) {
-             material.uniforms.uOpacity.value = sizeScale; // since opacityScale = sizeScale logic
+             material.uniforms.uOpacity.value = sizeScale;
          }
       }
       
@@ -786,26 +748,6 @@ const UniverseEngine = ({
         material.uniforms.uGravity.value = THREE.MathUtils.lerp(material.uniforms.uGravity.value, 1.0, 0.1);
       } else if (material) {
         material.uniforms.uGravity.value = THREE.MathUtils.lerp(material.uniforms.uGravity.value, 0.0, 0.1);
-      }
-
-      // Camera animation
-      if (cameraAnimation.active) {
-        cameraAnimation.elapsed += dt;
-        const progress = Math.min(cameraAnimation.elapsed / cameraAnimation.duration, 1.0);
-        
-        // Ease out cubic
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-        
-        camera.position.x = THREE.MathUtils.lerp(cameraAnimation.startX, cameraAnimation.endX, easedProgress);
-        camera.position.y = THREE.MathUtils.lerp(cameraAnimation.startY, cameraAnimation.endY, easedProgress);
-        
-        // Disable OrbitControls during animation to prevent override
-        controls.enabled = false;
-        
-        if (progress >= 1.0) {
-          cameraAnimation.active = false;
-          controls.enabled = true;
-        }
       }
 
       // Transition camera zoom - universal for ALL shapes

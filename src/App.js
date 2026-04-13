@@ -163,8 +163,6 @@ function App() {
         {mountedPages.has(1) && (
           <UniverseEngine 
             shape="Black Hole"
-            initialCamX={-33.6}
-            initialCamY={-30.7}
             defaultCamX={-5.11}
             defaultCamY={2.50}
             defaultCamZ={-8.90}
@@ -175,7 +173,7 @@ function App() {
             disableGui={false}
             isTransitioning={isTransitioning && isPageActive(1)}
             transitionProgress={transitionProgress}
-            transitionDirection={targetPage > activePage ? "out" : "in"}
+            transitionDirection={activePage === 1 ? "out" : "in"}
           />
         )}
         <CyberCallout show={isPageActive(1) && !isTransitioning} variant="top-left" top="20%" left="10%" title="EVENT HORIZON" text="DETECTED: Infinite Gravity Well. Spacetime curvature mapping nominal." delay={0.2} />
@@ -191,8 +189,6 @@ function App() {
         {mountedPages.has(2) && (
           <UniverseEngine 
             shape="Quantum Knot"
-            initialCamX={0}
-            initialCamY={0}
             defaultCamX={0}
             defaultCamY={5}
             defaultCamZ={15}
@@ -203,7 +199,7 @@ function App() {
             disableGui={true}
             isTransitioning={isTransitioning && isPageActive(2)}
             transitionProgress={transitionProgress}
-            transitionDirection={targetPage > activePage ? "in" : "out"}
+            transitionDirection={activePage === 2 ? "out" : "in"}
           />
         )}
         <CyberCallout show={isPageActive(2) && !isTransitioning} variant="top-right" top="25%" right="10%" title="UNCERTAINTY PRINCIPLE" text="STATE: ENTANGLED. Multiple probabilities collapsing." delay={0.3} />
@@ -218,8 +214,6 @@ function App() {
         {mountedPages.has(3) && (
           <UniverseEngine 
             shape="Cosmic Web"
-            initialCamX={0}
-            initialCamY={0}
             defaultCamX={0}
             defaultCamY={0}
             defaultCamZ={20}
@@ -242,8 +236,6 @@ function App() {
         {mountedPages.has(4) && (
           <UniverseEngine 
             shape="Quasar"
-            initialCamX={0}
-            initialCamY={0}
             defaultCamX={0}
             defaultCamY={0}
             defaultCamZ={25}
