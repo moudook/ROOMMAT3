@@ -7,6 +7,7 @@ A high-performance interactive 3D cosmic particle website featuring four unique 
 ## Live Demo
 
 **Workinng Public Access**: https://roommat3.vercel.app
+Try to touch some parts of the screen to make it interactable. You can also rotate it 
 
 Anyone can access this link without login or permissions.
 
