@@ -1,12 +1,12 @@
 # ROOMMAT3
 
-Cosmic Particle 3D Visualization Experience
+Cosmic Particle 3D Visualization Experience(kindly use in desktop)
 
 A high-performance interactive 3D cosmic particle website featuring four unique immersive environments: Black Hole, Quantum Knot, Cosmic Web, and Quasar. Built with Three.js, GPU-accelerated particle systems, and cinematic transitions.
 
 ## Live Demo
 
-**Public Access**: https://roommat3.vercel.app
+**Workinng Public Access**: https://roommat3.vercel.app
 
 Anyone can access this link without login or permissions.
 
